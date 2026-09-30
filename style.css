@@ -1,1 +1,295 @@
 
+{
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+user-select: none;
+-webkit-user-select: none;
+-webkit-touch-callout: none;
+}
+
+html,
+body {
+width: 100vw;
+height: 100vh;
+overflow: hidden;
+background: #090812;
+color: #ffffff;
+font-family: "Courier New", Courier, monospace;
+}
+#gameCanvas {
+display: block;
+position: absolute;
+inset: 0;
+width: 100vw;
+height: 100vh;
+image-rendering: pixelated;
+image-rendering: crisp-edges;
+z-index: 1;
+}
+#crt-overlay {
+pointer-events: none;
+position: absolute;
+inset: 0;
+width: 100vw;
+height: 100vh;
+background:
+linear-gradient(
+rgba(18, 16, 16, 0) 50%,
+rgba(0, 0, 0, 0.22) 50%
+),
+radial-gradient(
+circle at center,
+transparent 72%,
+rgba(0, 0, 0, 0.65) 100%
+);
+background-size: 100% 4px, 100% 100%;
+opacity: 0.8;
+z-index: 5;
+}
+#studio-badge {
+position: absolute;
+bottom: 14px;
+right: 16px;
+z-index: 12;
+display: flex;
+align-items: center;
+pointer-events: none;
+}
+#studio-logo {
+height: 44px;
+width: auto;
+image-rendering: pixelated;
+filter: drop-shadow(2px 2px 0 #000);
+}
+#studio-fallback {
+display: none;
+}
+.pixel-studio-badge {
+align-items: center;
+gap: 8px;
+background: #191428;
+border: 2px solid #5b467a;
+padding: 6px 10px;
+box-shadow: 2px 2px 0 #07050e;
+}
+.studio-icon-pixel {
+width: 14px;
+height: 14px;
+background: #ffaa00;
+border: 2px solid #ffffff;
+box-shadow: 1px 1px 0 #996600;
+}
+.studio-text {
+font-size: 11px;
+font-weight: 900;
+color: #d1c8e8;
+letter-spacing: 1.5px;
+}
+#modal-container {
+position: absolute;
+inset: 0;
+width: 100vw;
+height: 100vh;
+background: rgba(8, 6, 14, 0.8);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 25;
+}
+#modal-container.hidden {
+display: none;
+}
+.pixel-modal {
+width: 92%;
+max-width: 600px;
+max-height: 90vh;
+overflow: hidden;
+background: #1c1528;
+border: 4px solid #ffd32a;
+box-shadow:
+0 0 0 4px #3b2854,
+0 16px 30px rgba(0, 0, 0, 0.9);
+padding: 24px;
+display: flex;
+flex-direction: column;
+gap: 16px;
+text-align: center;
+}
+.pixel-modal.hidden {
+display: none;
+}
+.modal-header {
+font-size: 20px;
+font-weight: 900;
+color: #2ed573;
+text-shadow: 2px 2px #000;
+letter-spacing: 1px;
+}
+.modal-gold-display {
+font-size: 17px;
+font-weight: bold;
+color: #ffd32a;
+}
+.modal-body {
+font-size: 15px;
+line-height: 1.6;
+}
+.modal-actions {
+display: flex;
+gap: 16px;
+justify-content: center;
+margin-top: 16px;
+}
+.upgrades-grid {
+display: flex;
+flex-direction: column;
+gap: 10px;
+max-height: 48vh;
+overflow-y: auto;
+padding-right: 6px;
+}
+.upgrade-row,
+.protection-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 12px;
+background: #271c38;
+padding: 10px 12px;
+border: 2px solid #553e75;
+}
+.upg-info {
+flex: 1;
+text-align: left;
+}
+.upg-title {
+font-size: 14px;
+font-weight: bold;
+color: #ffffff;
+}
+.upg-desc {
+margin-top: 3px;
+font-size: 11px;
+color: #b8b3cc;
+}
+.build-help {
+color: #b8b3cc;
+font-size: 12px;
+line-height: 1.5;
+border-top: 2px solid #553e75;
+padding-top: 12px;
+}
+.pixel-btn {
+background: #2ed573;
+border: 3px solid #ffffff;
+color: #0b1a11;
+font-family: inherit;
+font-size: 14px;
+font-weight: 900;
+padding: 10px 18px;
+cursor: pointer;
+box-shadow: 0 4px 0 #1b663b;
+touch-action: manipulation;
+}
+.pixel-btn:hover {
+filter: brightness(1.15);
+}
+.pixel-btn:active {
+transform: translateY(3px);
+box-shadow: 0 1px 0 #1b663b;
+}
+.btn-gold {
+background: #ffa502;
+box-shadow: 0 4px 0 #995c00;
+}
+.btn-close {
+align-self: center;
+background: #747d8c;
+color: #ffffff;
+padding: 8px 24px;
+box-shadow: 0 4px 0 #474f5c;
+}
+.btn-buy {
+min-width: 92px;
+font-size: 12px;
+padding: 6px 10px;
+}
+.btn-max {
+background: #4b5463;
+color: #95a5a6;
+box-shadow: none;
+cursor: default;
+}
+#mobile-controls {
+display: none;
+position: absolute;
+bottom: 24px;
+left: 0;
+width: 100vw;
+padding: 0 28px;
+justify-content: space-between;
+align-items: flex-end;
+pointer-events: none;
+z-index: 15;
+}
+@media (max-width: 860px), (hover: none) and (pointer: coarse) {
+#mobile-controls {
+display: flex;
+}
+#studio-badge {
+top: 58px;
+bottom: unset;
+right: 14px;
+}
+}
+#joystick-base {
+pointer-events: auto;
+position: relative;
+width: 110px;
+height: 110px;
+background: rgba(30, 22, 45, 0.7);
+border: 4px solid #73539c;
+border-radius: 50%;
+touch-action: none;
+}
+#joystick-stick {
+pointer-events: none;
+position: absolute;
+top: 50%;
+left: 50%;
+width: 44px;
+height: 44px;
+background: #ffd32a;
+border: 3px solid #ffffff;
+border-radius: 50%;
+transform: translate(-50%, -50%);
+box-shadow: 0 4px 0 #b38b00;
+}
+#action-buttons {
+display: flex;
+gap: 14px;
+pointer-events: auto;
+}
+.touch-btn {
+width: 78px;
+height: 78px;
+background: #3742fa;
+border: 4px solid #ffffff;
+border-radius: 12px;
+color: #ffffff;
+font-family: inherit;
+font-size: 13px;
+font-weight: 900;
+box-shadow: 0 6px 0 #1e2499;
+cursor: pointer;
+touch-action: manipulation;
+}
+.touch-btn:active {
+transform: translateY(4px);
+box-shadow: 0 2px 0 #1e2499;
+}
+.btn-smash {
+background: #ff4757;
+box-shadow: 0 6px 0 #b31b28;
+}
