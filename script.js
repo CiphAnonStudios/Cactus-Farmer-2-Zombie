@@ -9,7 +9,7 @@ const AudioEngine={
   init(){
     if(!this.ctx){
       const A=window.AudioContext||window.webkitAudioContext;
-      if(A)this.ctx=new A()
+      if(A)this.ctx=new A();
     }
   },
 
@@ -25,11 +25,12 @@ const AudioEngine={
     o.type=type;
     o.frequency.setValueAtTime(f,this.ctx.currentTime);
 
-    if(end)
+    if(end){
       o.frequency.exponentialRampToValueAtTime(
         Math.max(10,end),
         this.ctx.currentTime+dur
       );
+    }
 
     g.gain.setValueAtTime(vol,this.ctx.currentTime);
     g.gain.linearRampToValueAtTime(
@@ -41,74 +42,30 @@ const AudioEngine={
     g.connect(this.ctx.destination);
 
     o.start();
-    o.stop(this.ctx.currentTime+dur)
+    o.stop(this.ctx.currentTime+dur);
   },
 
-  warning(){
-    this.tone(360,'square',.08,180)
-  },
-
-  fall(){
-    this.tone(540,'sawtooth',.3,80,.12)
-  },
-
-  plop(){
-    this.tone(130,'triangle',.2,25,.35)
-  },
-
-  spikeShot(){
-    this.tone(700,'square',.05,220,.1)
-  },
-
-  hammerSwing(){
-    this.tone(200,'sine',.1,50,.18)
-  },
-
-  hammerHit(){
-    this.tone(140,'square',.08,30,.3)
-  },
-
-  deflect(){
-    this.tone(850,'square',.07,1200,.2)
-  },
-
-  dash(){
-    this.tone(420,'triangle',.12,950,.18)
-  },
-
+  warning(){this.tone(360,'square',.08,180)},
+  fall(){this.tone(540,'sawtooth',.3,80,.12)},
+  plop(){this.tone(130,'triangle',.2,25,.35)},
+  spikeShot(){this.tone(700,'square',.05,220,.1)},
+  hammerSwing(){this.tone(200,'sine',.1,50,.18)},
+  hammerHit(){this.tone(140,'square',.08,30,.3)},
+  deflect(){this.tone(850,'square',.07,1200,.2)},
+  dash(){this.tone(420,'triangle',.12,950,.18)},
   pickup(){
     this.tone(523,'square',.05,null,.12);
-    setTimeout(()=>{
-      this.tone(784,'square',.08,null,.14)
-    },50)
+    setTimeout(()=>this.tone(784,'square',.08,null,.14),50);
   },
-
-  hurt(){
-    this.tone(110,'sawtooth',.2,25,.35)
-  },
-
+  hurt(){this.tone(110,'sawtooth',.2,25,.35)},
   coin(){
     this.tone(659,'triangle',.07,null,.16);
-    setTimeout(()=>{
-      this.tone(987,'triangle',.1,null,.18)
-    },70)
+    setTimeout(()=>this.tone(987,'triangle',.1,null,.18),70);
   },
-
-  interact(){
-    this.tone(440,'triangle',.08,null,.18)
-  },
-
-  destroy(){
-    this.tone(140,'sawtooth',.25,20,.35)
-  },
-
-  zombie(){
-    this.tone(90,'square',.12,55,.16)
-  },
-
-  turret(){
-    this.tone(760,'square',.045,250,.1)
-  }
+  interact(){this.tone(440,'triangle',.08,null,.18)},
+  destroy(){this.tone(140,'sawtooth',.25,20,.35)},
+  zombie(){this.tone(90,'square',.12,55,.16)},
+  turret(){this.tone(760,'square',.045,250,.1)}
 };
 
 const SAVE_KEY='PIXEL_CACTUS_CLASH_SAVE_v5';
@@ -133,9 +90,7 @@ let SaveData={
 
 function loadSave(){
   try{
-    const d=JSON.parse(
-      localStorage.getItem(SAVE_KEY)||'null'
-    );
+    const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
 
     if(d){
       SaveData.money=d.money||0;
@@ -144,10 +99,10 @@ function loadSave(){
       SaveData.upgrades=Object.assign(
         SaveData.upgrades,
         d.upgrades||{}
-      )
+      );
     }
   }catch(e){
-    console.warn(e)
+    console.warn(e);
   }
 }
 
@@ -156,8 +111,43 @@ function saveGame(){
     localStorage.setItem(
       SAVE_KEY,
       JSON.stringify(SaveData)
-    )
+    );
   }catch(e){}
+}
+
+/* A death starts a completely fresh run. */
+function freshRun(){
+  SaveData={
+    money:0,
+    cactusParts:0,
+    wave:1,
+    upgrades:{
+      hammerSpeed:0,
+      hammerStrength:0,
+      harvestYield:0,
+      moveSpeed:0,
+      dashLength:0,
+      dashCooldown:0,
+      partValue:0,
+      shockwaveDash:0,
+      tempShield:0,
+      magnetPickup:0
+    }
+  };
+
+  try{
+    localStorage.removeItem(SAVE_KEY);
+  }catch(e){}
+
+  defenses=[];
+  activeCacti=[];
+  zombies=[];
+  spikes=[];
+  droppedParts=[];
+
+  buildMode.active=false;
+  selectedDefense=null;
+  dragDefense=null;
 }
 
 loadSave();
@@ -170,7 +160,6 @@ const UPGRADES_DB={
     base:25,
     mult:1.8
   },
-
   hammerStrength:{
     name:'Hammer Power',
     desc:'Heavier blunt crush damage',
@@ -178,7 +167,6 @@ const UPGRADES_DB={
     base:30,
     mult:1.9
   },
-
   harvestYield:{
     name:'Harvest Yield',
     desc:'More parts per cactus',
@@ -186,7 +174,6 @@ const UPGRADES_DB={
     base:35,
     mult:2
   },
-
   moveSpeed:{
     name:'Block Agility',
     desc:'Faster arena movement',
@@ -194,7 +181,6 @@ const UPGRADES_DB={
     base:25,
     mult:1.7
   },
-
   dashLength:{
     name:'Dash Distance',
     desc:'Dash farther',
@@ -202,7 +188,6 @@ const UPGRADES_DB={
     base:40,
     mult:2
   },
-
   dashCooldown:{
     name:'Dash Recharge',
     desc:'Dash recharges faster',
@@ -210,7 +195,6 @@ const UPGRADES_DB={
     base:45,
     mult:1.85
   },
-
   partValue:{
     name:'Market Rates',
     desc:'Earn +$4 per part',
@@ -218,7 +202,6 @@ const UPGRADES_DB={
     base:50,
     mult:2.1
   },
-
   shockwaveDash:{
     name:'Shockwave Dash',
     desc:'Dash clears nearby spikes',
@@ -226,7 +209,6 @@ const UPGRADES_DB={
     base:180,
     mult:1
   },
-
   tempShield:{
     name:'Shield Aura',
     desc:'Absorbs 1 hit each level',
@@ -234,7 +216,6 @@ const UPGRADES_DB={
     base:140,
     mult:1
   },
-
   magnetPickup:{
     name:'Part Magnet',
     desc:'Attracts distant parts',
@@ -251,7 +232,6 @@ const PROTECTION_DB={
     cost:80,
     hp:180
   },
-
   turret:{
     name:'Auto Turret',
     desc:'Automatically shoots zombies in its radius.',
@@ -265,10 +245,8 @@ function upgradeCost(k){
   const l=SaveData.upgrades[k]||0;
 
   return l>=i.max
-    ?null
-    :Math.floor(
-      i.base*Math.pow(i.mult,l)
-    )
+    ? null
+    : Math.floor(i.base*Math.pow(i.mult,l));
 }
 
 const canvas=document.getElementById('gameCanvas');
@@ -286,7 +264,7 @@ function resizeCanvas(){
   canvas.width=screenW;
   canvas.height=screenH;
 
-  ctx.imageSmoothingEnabled=false
+  ctx.imageSmoothingEnabled=false;
 }
 
 addEventListener('resize',resizeCanvas);
@@ -298,11 +276,11 @@ let hitStopTime=0;
 
 function triggerShake(m,d){
   shakeMag=m;
-  shakeTime=d
+  shakeTime=d;
 }
 
 function triggerHitStop(s){
-  hitStopTime=s
+  hitStopTime=s;
 }
 
 const STATES={
@@ -312,7 +290,6 @@ const STATES={
 };
 
 let gameState=STATES.MENU;
-
 const keys={};
 
 addEventListener('keydown',e=>{
@@ -321,38 +298,41 @@ addEventListener('keydown',e=>{
   keys[e.key.toLowerCase()]=true;
   keys[e.code]=true;
 
-  if(e.code==='Space')
+  if(e.code==='Space'){
     e.preventDefault();
+  }
 
   if(gameState===STATES.GAMEOVER){
     gameState=STATES.MENU;
-    return
+    return;
   }
 
   if(e.key==='Escape'){
-    if(buildMode.active)
+    if(buildMode.active){
       cancelBuild();
-    else
+    }else{
       closeAllModals();
-
-    return
+    }
+    return;
   }
 
-  if(gameState!==STATES.PLAYING)
-    return;
+  if(gameState!==STATES.PLAYING)return;
 
   if(e.code==='Space'){
-    if(buildMode.active)
+    if(buildMode.active){
       placeDefense();
-    else
-      Player.attack()
+    }else{
+      Player.attack();
+    }
   }
 
-  if(e.key.toLowerCase()==='i')
+  if(e.key.toLowerCase()==='i'){
     Player.dash();
+  }
 
-  if(e.key.toLowerCase()==='e')
+  if(e.key.toLowerCase()==='e'){
     checkStandsInteraction();
+  }
 
   if(
     buildMode.active &&
@@ -364,17 +344,19 @@ addEventListener('keydown',e=>{
     )
   ){
     e.preventDefault();
-    rotateBuild(e.key)
+    rotateBuild(e.key);
   }
 });
 
 addEventListener('keyup',e=>{
   keys[e.key.toLowerCase()]=false;
-  keys[e.code]=false
+  keys[e.code]=false;
 });
 
 canvas.addEventListener('mousedown',e=>{
   AudioEngine.init();
+
+  const pt=canvasPoint(e);
 
   if(gameState===STATES.MENU){
 
@@ -384,86 +366,110 @@ canvas.addEventListener('mousedown',e=>{
     const by=screenH/2+25;
 
     if(
-      e.clientX>=bx &&
-      e.clientX<=bx+bw &&
-      e.clientY>=by &&
-      e.clientY<=by+bh
+      pt.x>=bx &&
+      pt.x<=bx+bw &&
+      pt.y>=by &&
+      pt.y<=by+bh
     ){
-      startNewGame()
+      startNewGame();
     }
 
   }else if(gameState===STATES.PLAYING){
 
     if(buildMode.active){
-      placeDefense(e.clientX,e.clientY);
-      return
+      buildMode.x=pt.x;
+      buildMode.y=pt.y;
+      placeDefense(pt.x,pt.y);
+      return;
     }
 
-    if(!checkStandsInteraction(e.clientX,e.clientY))
-      Player.attack()
+    const hit=defenseAt(pt.x,pt.y);
+
+    if(hit){
+      selectedDefense=hit;
+      dragDefense=hit;
+
+      dragOffsetX=pt.x-hit.x;
+      dragOffsetY=pt.y-hit.y;
+
+      return;
+    }
+
+    if(!checkStandsInteraction(pt.x,pt.y)){
+      Player.attack();
+    }
 
   }else{
-    gameState=STATES.MENU
+    gameState=STATES.MENU;
   }
 });
 
-const joystickBase=
-  document.getElementById('joystick-base');
+canvas.addEventListener('mousemove',e=>{
+  if(gameState!==STATES.PLAYING)return;
 
-const joystickStick=
-  document.getElementById('joystick-stick');
+  const pt=canvasPoint(e);
 
-const btnDash=
-  document.getElementById('btn-dash');
+  if(buildMode.active){
+    buildMode.x=pt.x;
+    buildMode.y=pt.y;
+  }
 
-const btnAttack=
-  document.getElementById('btn-attack');
+  if(dragDefense){
+    const nx=pt.x-dragOffsetX;
+    const ny=pt.y-dragOffsetY;
+
+    if(canMoveDefense(dragDefense,nx,ny)){
+      dragDefense.x=nx;
+      dragDefense.y=ny;
+    }
+  }
+});
+
+addEventListener('mouseup',()=>{
+  if(dragDefense){
+    saveGame();
+    dragDefense=null;
+  }
+});
+
+const joystickBase=document.getElementById('joystick-base');
+const joystickStick=document.getElementById('joystick-stick');
+const btnDash=document.getElementById('btn-dash');
+const btnAttack=document.getElementById('btn-attack');
 
 let touchX=0;
 let touchY=0;
 let activeTouchId=null;
 
-joystickBase.addEventListener(
-  'touchstart',
-  e=>{
-    AudioEngine.init();
-    e.preventDefault();
+joystickBase.addEventListener('touchstart',e=>{
+  AudioEngine.init();
+  e.preventDefault();
 
-    const t=e.changedTouches[0];
+  const t=e.changedTouches[0];
+  activeTouchId=t.identifier;
 
-    activeTouchId=t.identifier;
+  handleJoystickMove(t);
+},{passive:false});
 
-    handleJoystickMove(t)
-  },
-  {passive:false}
-);
+addEventListener('touchmove',e=>{
+  if(activeTouchId===null)return;
 
-addEventListener(
-  'touchmove',
-  e=>{
-    if(activeTouchId===null)
-      return;
-
-    for(const t of e.changedTouches){
-      if(t.identifier===activeTouchId){
-        handleJoystickMove(t);
-        break
-      }
+  for(const t of e.changedTouches){
+    if(t.identifier===activeTouchId){
+      handleJoystickMove(t);
+      break;
     }
-  },
-  {passive:false}
-);
+  }
+},{passive:false});
 
 function resetJoystick(e){
   for(const t of e.changedTouches){
     if(t.identifier===activeTouchId){
       activeTouchId=null;
-      touchX=touchY=0;
-
-      joystickStick.style.transform=
-        'translate(-50%,-50%)';
-
-      break
+      touchX=0;
+      touchY=0;
+      joystickStick.style.transform='translate(-50%,-50%)';
+      break;
     }
   }
 }
@@ -490,38 +496,30 @@ function handleJoystickMove(t){
   touchY=Math.sin(a)*(cd/max);
 
   joystickStick.style.transform=
-    `translate(
-      calc(-50% + ${Math.cos(a)*cd}px),
-      calc(-50% + ${Math.sin(a)*cd}px)
-    )`
+    `translate(calc(-50% + ${Math.cos(a)*cd}px),calc(-50% + ${Math.sin(a)*cd}px))`;
 }
 
-btnDash.addEventListener(
-  'touchstart',
-  e=>{
-    e.preventDefault();
-    AudioEngine.init();
+btnDash.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  AudioEngine.init();
 
-    if(gameState===STATES.PLAYING)
-      Player.dash()
+  if(gameState===STATES.PLAYING){
+    Player.dash();
   }
-);
+});
 
-btnAttack.addEventListener(
-  'touchstart',
-  e=>{
-    e.preventDefault();
-    AudioEngine.init();
+btnAttack.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  AudioEngine.init();
 
-    if(gameState!==STATES.PLAYING)
-      return;
+  if(gameState!==STATES.PLAYING)return;
 
-    if(buildMode.active)
-      placeDefense();
-    else if(!checkStandsInteraction())
-      Player.attack()
+  if(buildMode.active){
+    placeDefense();
+  }else if(!checkStandsInteraction()){
+    Player.attack();
   }
-);
+});
 
 let particles=[];
 let floatingTexts=[];
@@ -549,7 +547,7 @@ function addDust(
       color,
       life:1,
       decay:Math.random()*.04+.03
-    })
+    });
   }
 }
 
@@ -574,7 +572,7 @@ function addChunks(x,y,count=15){
       color:pal[Math.floor(Math.random()*pal.length)],
       life:1,
       decay:.032
-    })
+    });
   }
 }
 
@@ -591,7 +589,7 @@ function addShockwave(
     maxR:r,
     color,
     life:1
-  })
+  });
 }
 
 function addFloatText(
@@ -609,7 +607,7 @@ function addFloatText(
     size,
     life:1,
     vy:-1.2
-  })
+  });
 }
 
 function dropParts(x,y,count){
@@ -622,21 +620,15 @@ function dropParts(x,y,count){
       y,
       targetX:Math.max(
         30,
-        Math.min(
-          screenW-30,
-          x+Math.cos(a)*d
-        )
+        Math.min(screenW-30,x+Math.cos(a)*d)
       ),
       targetY:Math.max(
         60,
-        Math.min(
-          screenH-30,
-          y+Math.sin(a)*d
-        )
+        Math.min(screenH-30,y+Math.sin(a)*d)
       ),
       progress:0,
       bob:Math.random()*6.28
-    })
+    });
   }
 }
 
@@ -648,17 +640,15 @@ function fireSpike(x,y,vx,vy,s){
     vy:vy*s,
     size:10,
     trail:[]
-  })
+  });
 }
 
 const PixelIcons={
-
   heart(x,y,full){
     ctx.save();
     ctx.translate(x,y);
 
-    ctx.fillStyle=
-      full?'#ff4757':'#332b45';
+    ctx.fillStyle=full?'#ff4757':'#332b45';
 
     ctx.fillRect(1,0,2,1);
     ctx.fillRect(4,0,2,1);
@@ -669,10 +659,10 @@ const PixelIcons={
 
     if(full){
       ctx.fillStyle='#ff8a94';
-      ctx.fillRect(1,1,1,1)
+      ctx.fillRect(1,1,1,1);
     }
 
-    ctx.restore()
+    ctx.restore();
   },
 
   coin(x,y){
@@ -683,7 +673,7 @@ const PixelIcons={
     ctx.fillRect(x-2,y-3,4,6);
 
     ctx.fillStyle='#fff48f';
-    ctx.fillRect(x-2,y-2,2,2)
+    ctx.fillRect(x-2,y-2,2,2);
   },
 
   cactus(x,y){
@@ -694,16 +684,16 @@ const PixelIcons={
     ctx.fillRect(x-3,y-3,6,6);
 
     ctx.fillStyle='#ffa502';
-    ctx.fillRect(x-1,y-1,2,2)
+    ctx.fillRect(x-1,y-1,2,2);
   }
 };
 
 const Player={
-
   x:0,
   y:0,
 
-  baseSpeed:4,
+  /* Restored faster normal movement. */
+  baseSpeed:5.2,
 
   facing:'down',
 
@@ -720,7 +710,6 @@ const Player={
   maxHealth:4,
 
   shield:0,
-
   invincibleTimer:0,
 
   dashing:false,
@@ -741,9 +730,7 @@ const Player={
     this.y=screenH/2;
 
     this.health=this.maxHealth;
-
-    this.shield=
-      SaveData.upgrades.tempShield?1:0;
+    this.shield=SaveData.upgrades.tempShield?1:0;
 
     this.dashing=false;
     this.dashTimer=0;
@@ -751,38 +738,38 @@ const Player={
 
     this.isAttacking=false;
     this.attackCooldown=0;
-    this.invincibleTimer=0;
 
-    this.dashTrail=[]
+    this.invincibleTimer=0;
+    this.dashTrail=[];
   },
 
   getSpeed(){
     return this.baseSpeed+
-      SaveData.upgrades.moveSpeed*.45
+      SaveData.upgrades.moveSpeed*.45;
   },
 
   getHammerDelay(){
     return Math.max(
       .18,
       .44-SaveData.upgrades.hammerSpeed*.05
-    )
+    );
   },
 
   getHammerDamage(){
     return 26+
-      SaveData.upgrades.hammerStrength*14
+      SaveData.upgrades.hammerStrength*14;
   },
 
   getDashDuration(){
     return .17+
-      SaveData.upgrades.dashLength*.035
+      SaveData.upgrades.dashLength*.035;
   },
 
   getDashCooldown(){
     return Math.max(
       .55,
       1.4-SaveData.upgrades.dashCooldown*.16
-    )
+    );
   },
 
   dash(){
@@ -790,18 +777,14 @@ const Player={
       this.dashCooldownTimer>0 ||
       this.dashing ||
       buildMode.active
-    )
-      return;
+    )return;
 
     AudioEngine.dash();
 
     this.dashing=true;
 
-    this.dashTimer=
-      this.getDashDuration();
-
-    this.dashCooldownTimer=
-      this.getDashCooldown();
+    this.dashTimer=this.getDashDuration();
+    this.dashCooldownTimer=this.getDashCooldown();
 
     let dx=0;
     let dy=0;
@@ -813,18 +796,14 @@ const Player={
 
     if(touchX||touchY){
       dx=touchX;
-      dy=touchY
+      dy=touchY;
     }
 
     if(!dx&&!dy){
-      if(this.facing==='up')
-        dy=-1;
-      else if(this.facing==='down')
-        dy=1;
-      else if(this.facing==='left')
-        dx=-1;
-      else
-        dx=1
+      if(this.facing==='up')dy=-1;
+      else if(this.facing==='down')dy=1;
+      else if(this.facing==='left')dx=-1;
+      else dx=1;
     }
 
     const l=Math.hypot(dx,dy)||1;
@@ -832,33 +811,20 @@ const Player={
     this.dashVx=dx/l*12.5;
     this.dashVy=dy/l*12.5;
 
-    addDust(
-      this.x,
-      this.y,
-      10,
-      '#fff'
-    );
+    addDust(this.x,this.y,10,'#fff');
 
     if(SaveData.upgrades.shockwaveDash){
       spikes=spikes.filter(s=>{
-        if(
-          Math.hypot(
-            s.x-this.x,
-            s.y-this.y
-          )<110
-        ){
-          addDust(
-            s.x,
-            s.y,
-            5,
-            '#ffd32a'
-          );
-
-          return false
+        if(Math.hypot(
+          s.x-this.x,
+          s.y-this.y
+        )<110){
+          addDust(s.x,s.y,5,'#ffd32a');
+          return false;
         }
 
-        return true
-      })
+        return true;
+      });
     }
   },
 
@@ -867,69 +833,52 @@ const Player={
       this.attackCooldown>0 ||
       this.dashing ||
       buildMode.active
-    )
-      return;
+    )return;
 
     AudioEngine.hammerSwing();
 
     this.isAttacking=true;
     this.attackTimer=.2;
+    this.attackCooldown=this.getHammerDelay();
 
-    this.attackCooldown=
-      this.getHammerDelay();
-
-    const sx=
-      this.x+
+    const sx=this.x+
       (
         this.facing==='left'
-        ?-22
-        :this.facing==='right'
-        ?22
-        :0
+          ?-22
+          :this.facing==='right'
+            ?22
+            :0
       );
 
-    const sy=
-      this.y+
+    const sy=this.y+
       (
         this.facing==='up'
-        ?-22
-        :this.facing==='down'
-        ?22
-        :0
+          ?-22
+          :this.facing==='down'
+            ?22
+            :0
       );
 
-    addShockwave(
-      sx,
-      sy,
-      48,
-      '#fff'
-    );
+    addShockwave(sx,sy,48,'#fff');
 
     let hit=false;
 
     spikes=spikes.filter(s=>{
-      if(
-        Math.hypot(
-          s.x-sx,
-          s.y-sy
-        )<58
-      ){
-        addDust(
-          s.x,
-          s.y,
-          5,
-          '#ffd32a'
-        );
-
+      if(Math.hypot(
+        s.x-sx,
+        s.y-sy
+      )<58){
+        addDust(s.x,s.y,5,'#ffd32a');
         hit=true;
-        return false
+        return false;
       }
 
-      return true
+      return true;
     });
 
-    if(hit)
+    if(hit){
       AudioEngine.deflect();
+    }
 
     activeCacti.forEach(c=>{
       if(
@@ -937,14 +886,10 @@ const Player={
         Math.hypot(
           sx-c.x,
           sy-c.y
-        )<
-        c.width/2+52
+        )<c.width/2+52
       ){
-        c.hit(
-          this.getHammerDamage()
-        );
-
-        hit=true
+        c.hit(this.getHammerDamage());
+        hit=true;
       }
     });
 
@@ -956,24 +901,21 @@ const Player={
           sy-z.y
         )<48
       ){
-        z.takeDamage(
-          this.getHammerDamage()
-        );
-
-        hit=true
+        z.takeDamage(this.getHammerDamage());
+        hit=true;
       }
     });
 
-    if(hit)
-      triggerHitStop(.035)
+    if(hit){
+      triggerHitStop(.035);
+    }
   },
 
   takeDamage(a=1){
     if(
       this.invincibleTimer>0 ||
       this.dashing
-    )
-      return;
+    )return;
 
     if(this.shield>0){
       this.shield--;
@@ -987,7 +929,7 @@ const Player={
         16
       );
 
-      return
+      return;
     }
 
     this.health-=a;
@@ -1013,13 +955,14 @@ const Player={
     );
 
     if(this.health<=0){
+      /* COMPLETE RESET ON DEATH */
+      freshRun();
+      this.reset();
       gameState=STATES.GAMEOVER;
-      saveGame()
     }
   },
 
   update(dt){
-
     this.dashCooldownTimer=
       Math.max(
         0,
@@ -1035,8 +978,9 @@ const Player={
     if(this.attackTimer>0){
       this.attackTimer-=dt;
 
-      if(this.attackTimer<=0)
-        this.isAttacking=false
+      if(this.attackTimer<=0){
+        this.isAttacking=false;
+      }
     }
 
     this.invincibleTimer=
@@ -1052,8 +996,7 @@ const Player={
 
       if(this.blinkTimer<-.15){
         this.isBlinking=false;
-        this.blinkTimer=
-          Math.random()*3+2
+        this.blinkTimer=Math.random()*3+2;
       }
     }
 
@@ -1061,14 +1004,15 @@ const Player={
 
       this.dashTimer-=dt;
 
-      this.x+=this.dashVx;
-      this.y+=this.dashVy;
+      this.x+=this.dashVx*(dt*60);
+      this.y+=this.dashVy*(dt*60);
 
       this.squashX=1.25;
       this.squashY=.8;
 
-      if(this.dashTimer<=0)
-        this.dashing=false
+      if(this.dashTimer<=0){
+        this.dashing=false;
+      }
 
     }else{
 
@@ -1082,7 +1026,7 @@ const Player={
 
       if(touchX||touchY){
         mx=touchX;
-        my=touchY
+        my=touchY;
       }
 
       if(mx||my){
@@ -1090,8 +1034,8 @@ const Player={
         const l=Math.hypot(mx,my);
         const s=this.getSpeed();
 
-        this.x+=mx/l*s;
-        this.y+=my/l*s;
+        this.x+=mx/l*s*(dt*60);
+        this.y+=my/l*s*(dt*60);
 
         this.eyeLookX=mx/l*4;
         this.eyeLookY=my/l*4;
@@ -1102,38 +1046,31 @@ const Player={
         this.squashY=
           1-Math.sin(Date.now()*.02)*.08;
 
-        if(Math.abs(mx)>Math.abs(my))
-          this.facing=
-            mx>0?'right':'left';
-        else
-          this.facing=
-            my>0?'down':'up'
+        if(Math.abs(mx)>Math.abs(my)){
+          this.facing=mx>0?'right':'left';
+        }else{
+          this.facing=my>0?'down':'up';
+        }
 
       }else{
 
         this.eyeLookX*=.8;
         this.eyeLookY=2;
 
-        this.squashX=
-          this.squashY=1
+        this.squashX=1;
+        this.squashY=1;
       }
     }
 
     this.x=Math.max(
       24,
-      Math.min(
-        screenW-24,
-        this.x
-      )
+      Math.min(screenW-24,this.x)
     );
 
     this.y=Math.max(
       72,
-      Math.min(
-        screenH-24,
-        this.y
-      )
-    )
+      Math.min(screenH-24,this.y)
+    );
   },
 
   draw(){
@@ -1141,8 +1078,7 @@ const Player={
     if(
       this.invincibleTimer>0 &&
       Math.floor(Date.now()/60)%2===0
-    )
-      return;
+    )return;
 
     ctx.fillStyle='rgba(0,0,0,.45)';
 
@@ -1174,7 +1110,7 @@ const Player={
         Math.PI*2
       );
 
-      ctx.stroke()
+      ctx.stroke();
     }
 
     drawBlockPlayer(
@@ -1189,7 +1125,7 @@ const Player={
       null,
       this.isAttacking,
       this.attackTimer
-    )
+    );
   }
 };
 
@@ -1206,7 +1142,6 @@ function drawBlockPlayer(
   attacking=false,
   attackTimer=0
 ){
-
   ctx.save();
 
   ctx.translate(
@@ -1217,15 +1152,9 @@ function drawBlockPlayer(
   ctx.scale(sx,sy);
 
   const b=30;
-
-  const body=
-    tint||'#ffa801';
-
-  const shade=
-    tint||'#d35400';
-
-  const hi=
-    tint||'#ffd32a';
+  const body=tint||'#ffa801';
+  const shade=tint||'#d35400';
+  const hi=tint||'#ffd32a';
 
   ctx.fillStyle=body;
   ctx.fillRect(-15,-15,30,30);
@@ -1269,36 +1198,23 @@ function drawBlockPlayer(
       -1+eyeY,
       3,
       4
-    )
+    );
 
   }else{
 
     ctx.fillStyle='#0f0f1c';
 
-    ctx.fillRect(
-      -9,
-      1,
-      7,
-      2
-    );
-
-    ctx.fillRect(
-      3,
-      1,
-      7,
-      2
-    )
+    ctx.fillRect(-9,1,7,2);
+    ctx.fillRect(3,1,7,2);
   }
 
-  const side=
-    facing==='left'?-1:1;
+  const side=facing==='left'?-1:1;
 
   if(attacking){
 
     ctx.save();
 
-    const p=
-      (.2-attackTimer)/.2;
+    const p=(.2-attackTimer)/.2;
 
     ctx.translate(
       side*14,
@@ -1310,59 +1226,34 @@ function drawBlockPlayer(
     );
 
     ctx.fillStyle='#8b5a2b';
-    ctx.fillRect(
-      -2,
-      -26,
-      4,
-      30
-    );
+    ctx.fillRect(-2,-26,4,30);
 
     ctx.fillStyle='#718093';
-
-    ctx.fillRect(
-      -12,
-      -34,
-      24,
-      12
-    );
+    ctx.fillRect(-12,-34,24,12);
 
     ctx.fillStyle='#dcdde1';
+    ctx.fillRect(-12,-34,4,12);
 
-    ctx.fillRect(
-      -12,
-      -34,
-      4,
-      12
-    );
-
-    ctx.restore()
+    ctx.restore();
 
   }else{
 
     ctx.fillStyle='#8b5a2b';
-
-    ctx.fillRect(
-      side*12,
-      -10,
-      3,
-      22
-    );
+    ctx.fillRect(side*12,-10,3,22);
 
     ctx.fillStyle='#718093';
-
     ctx.fillRect(
       side*12-5,
       -16,
       14,
       8
-    )
+    );
   }
 
-  ctx.restore()
+  ctx.restore();
 }
 
 const CACTUS_TYPES={
-
   SMALL:{
     scale:.7,
     spikes:6,
@@ -1370,7 +1261,6 @@ const CACTUS_TYPES={
     drops:2,
     hp:.6
   },
-
   MEDIUM:{
     scale:1,
     spikes:10,
@@ -1378,7 +1268,6 @@ const CACTUS_TYPES={
     drops:4,
     hp:1
   },
-
   GIANT:{
     scale:1.5,
     spikes:16,
@@ -1395,25 +1284,17 @@ class Cactus{
     this.x=x;
     this.y=y;
 
-    this.type=
-      CACTUS_TYPES[typeKey];
+    this.type=CACTUS_TYPES[typeKey];
+    this.scale=this.type.scale;
 
-    this.scale=
-      this.type.scale;
+    this.width=46*this.scale;
+    this.height=68*this.scale;
 
-    this.width=
-      46*this.scale;
+    const base=35+SaveData.wave*10;
 
-    this.height=
-      68*this.scale;
-
-    const base=
-      35+SaveData.wave*10;
-
-    this.maxHp=
-      Math.round(
-        base*this.type.hp
-      );
+    this.maxHp=Math.round(
+      base*this.type.hp
+    );
 
     this.hp=this.maxHp;
 
@@ -1424,13 +1305,12 @@ class Cactus{
     this.fallSpeed=0;
     this.plopTimer=0;
     this.shake=0;
-    this.warned=false
+    this.warned=false;
   }
 
   hit(d){
 
-    if(this.state!=='GROUNDED')
-      return;
+    if(this.state!=='GROUNDED')return;
 
     this.hp-=d;
     this.shake=.15;
@@ -1451,8 +1331,9 @@ class Cactus{
       17
     );
 
-    if(this.hp<=0)
-      this.destroy()
+    if(this.hp<=0){
+      this.destroy();
+    }
   }
 
   destroy(){
@@ -1488,7 +1369,7 @@ class Cactus{
       `+${n} PARTS!`,
       '#2ed573',
       18
-    )
+    );
   }
 
   fireSpikes(){
@@ -1497,21 +1378,15 @@ class Cactus{
       this.type.spikes+
       Math.min(
         8,
-        Math.floor(
-          SaveData.wave*.5
-        )
+        Math.floor(SaveData.wave*.5)
       );
 
-    const step=
-      Math.PI*2/n;
-
-    const off=
-      Math.random()*Math.PI;
+    const step=Math.PI*2/n;
+    const off=Math.random()*Math.PI;
 
     for(let i=0;i<n;i++){
 
-      const a=
-        off+i*step;
+      const a=off+i*step;
 
       fireSpike(
         this.x,
@@ -1519,14 +1394,15 @@ class Cactus{
         Math.cos(a),
         Math.sin(a),
         this.type.speed
-      )
+      );
     }
   }
 
   update(dt){
 
-    if(this.shake>0)
+    if(this.shake>0){
       this.shake-=dt;
+    }
 
     if(this.state==='WARNING'){
 
@@ -1537,13 +1413,15 @@ class Cactus{
         this.warnTimer<.65
       ){
         AudioEngine.warning();
-        this.warned=true
+        this.warned=true;
       }
 
       if(this.warnTimer<=0){
+
         this.state='FALLING';
         this.fallSpeed=6;
-        AudioEngine.fall()
+
+        AudioEngine.fall();
       }
 
     }else if(this.state==='FALLING'){
@@ -1572,28 +1450,27 @@ class Cactus{
           6
         );
 
-        this.fireSpikes()
+        this.fireSpikes();
       }
 
     }else if(this.state==='IMPACT'){
 
       this.plopTimer-=dt;
 
-      if(this.plopTimer<=0)
-        this.state='GROUNDED'
+      if(this.plopTimer<=0){
+        this.state='GROUNDED';
+      }
     }
   }
 
   draw(){
 
-    if(this.state==='DESTROYED')
-      return;
+    if(this.state==='DESTROYED')return;
 
-    const sr=
-      Math.max(
-        .2,
-        1-this.yHeight/400*.7
-      );
+    const sr=Math.max(
+      .2,
+      1-this.yHeight/400*.7
+    );
 
     ctx.fillStyle='rgba(0,0,0,.5)';
 
@@ -1615,8 +1492,8 @@ class Cactus{
 
       ctx.strokeStyle=
         Date.now()%200<100
-        ?'#ff4757'
-        :'#ffd32a';
+          ?'#ff4757'
+          :'#ffd32a';
 
       ctx.lineWidth=3;
 
@@ -1641,7 +1518,7 @@ class Cactus{
         'CACTUS DROP',
         this.x,
         this.y-44*this.scale
-      )
+      );
     }
 
     ctx.save();
@@ -1651,15 +1528,11 @@ class Cactus{
 
     if(this.shake>0){
       dx+=(Math.random()-.5)*6;
-      dy+=(Math.random()-.5)*6
+      dy+=(Math.random()-.5)*6;
     }
 
     ctx.translate(dx,dy);
-
-    ctx.scale(
-      this.scale,
-      this.scale
-    );
+    ctx.scale(this.scale,this.scale);
 
     renderCactus();
 
@@ -1672,7 +1545,6 @@ class Cactus{
       const by=this.y-56*this.scale;
 
       ctx.fillStyle='#0a0a14';
-
       ctx.fillRect(
         bx-2,
         by-2,
@@ -1682,8 +1554,8 @@ class Cactus{
 
       ctx.fillStyle=
         this.hp/this.maxHp>.35
-        ?'#2ed573'
-        :'#ff4757';
+          ?'#2ed573'
+          :'#ff4757';
 
       ctx.fillRect(
         bx,
@@ -1693,7 +1565,7 @@ class Cactus{
           this.hp/this.maxHp
         ),
         7
-      )
+      );
     }
   }
 }
@@ -1702,114 +1574,36 @@ function renderCactus(){
 
   ctx.fillStyle='#2ed573';
 
-  ctx.fillRect(
-    -14,
-    -36,
-    28,
-    52
-  );
+  ctx.fillRect(-14,-36,28,52);
 
-  ctx.fillRect(
-    -28,
-    -20,
-    16,
-    10
-  );
+  ctx.fillRect(-28,-20,16,10);
+  ctx.fillRect(-28,-32,10,16);
 
-  ctx.fillRect(
-    -28,
-    -32,
-    10,
-    16
-  );
-
-  ctx.fillRect(
-    12,
-    -14,
-    16,
-    10
-  );
-
-  ctx.fillRect(
-    18,
-    -28,
-    10,
-    18
-  );
+  ctx.fillRect(12,-14,16,10);
+  ctx.fillRect(18,-28,10,18);
 
   ctx.fillStyle='#1e824c';
 
-  ctx.fillRect(
-    -14,
-    -36,
-    6,
-    52
-  );
-
-  ctx.fillRect(
-    -28,
-    -32,
-    3,
-    16
-  );
+  ctx.fillRect(-14,-36,6,52);
+  ctx.fillRect(-28,-32,3,16);
 
   ctx.fillStyle='#7bed9f';
 
-  ctx.fillRect(
-    4,
-    -34,
-    4,
-    50
-  );
-
-  ctx.fillRect(
-    24,
-    -28,
-    3,
-    18
-  );
+  ctx.fillRect(4,-34,4,50);
+  ctx.fillRect(24,-28,3,18);
 
   ctx.fillStyle='#fff';
 
-  ctx.fillRect(
-    -16,
-    -26,
-    3,
-    2
-  );
-
-  ctx.fillRect(
-    -16,
-    -10,
-    3,
-    2
-  );
-
-  ctx.fillRect(
-    14,
-    -28,
-    3,
-    2
-  );
-
-  ctx.fillRect(
-    14,
-    -8,
-    3,
-    2
-  );
+  ctx.fillRect(-16,-26,3,2);
+  ctx.fillRect(-16,-10,3,2);
+  ctx.fillRect(14,-28,3,2);
+  ctx.fillRect(14,-8,3,2);
 
   ctx.fillStyle='#ff4757';
-
-  ctx.fillRect(
-    -6,
-    -42,
-    12,
-    6
-  )
+  ctx.fillRect(-6,-42,12,6);
 }
 
-// LEVEL / WAVE SYSTEM
+/* LEVEL SYSTEM */
 
 let activeCacti=[];
 let zombies=[];
@@ -1828,27 +1622,27 @@ let levelIntroTimer=0;
 
 function levelTargets(l){
   return{
-    cacti:Math.min(
-      40,
-      8+l*3
-    ),
-
-    zombies:Math.min(
-      35,
-      4+l*2
-    )
-  }
+    cacti:Math.min(40,8+l*3),
+    zombies:Math.min(35,4+l*2)
+  };
 }
 
 function initWave(n){
+
+  /*
+    IMPORTANT:
+    Defenses are NOT cleared here.
+    They remain between levels.
+  */
 
   activeCacti=[];
   zombies=[];
   spikes=[];
   droppedParts=[];
-  defenses=[];
 
   buildMode.active=false;
+  selectedDefense=null;
+  dragDefense=null;
 
   const t=levelTargets(n);
 
@@ -1872,7 +1666,7 @@ function initWave(n){
     `LEVEL ${n}`,
     '#ffd32a',
     28
-  )
+  );
 }
 
 function randomSpawn(){
@@ -1880,84 +1674,92 @@ function randomSpawn(){
   const p=90;
 
   return{
-    x:p+
-      Math.random()*
-      (screenW-p*2),
-
-    y:80+
-      Math.random()*
-      (screenH-110)
-  }
+    x:p+Math.random()*(screenW-p*2),
+    y:80+Math.random()*(screenH-110)
+  };
 }
 
 function updateWave(dt){
 
   if(levelIntroTimer>0){
     levelIntroTimer-=dt;
-    return
-  }
-
-  if(cactiSpawned<levelCactiTarget){
-
-    cactusTimer-=dt;
-
-    if(cactusTimer<=0){
-
-      cactiSpawned++;
-
-      cactusTimer=
-        Math.max(
-          .45,
-          1.3-
-          SaveData.wave*.025
-        );
-
-      const p=randomSpawn();
-      const r=Math.random();
-
-      activeCacti.push(
-        new Cactus(
-          p.x,
-          p.y,
-          r<.35
-            ?'SMALL'
-            :r>.84
-            ?'GIANT'
-            :'MEDIUM'
-        )
-      )
-    }
-  }
-
-  if(zombiesSpawned<levelZombieTarget){
-
-    zombieTimer-=dt;
-
-    if(zombieTimer<=0){
-
-      zombiesSpawned++;
-
-      zombieTimer=
-        Math.max(
-          .55,
-          1.8-
-          SaveData.wave*.04
-        );
-
-      spawnZombie()
-    }
   }
 
   if(
+    cactiSpawned<levelCactiTarget &&
+    cactusTimer<=0
+  ){
+
+    const p=randomSpawn();
+
+    const r=Math.random();
+
+    const type=
+      r<.55
+        ?'SMALL'
+        :r<.88
+          ?'MEDIUM'
+          :'GIANT';
+
+    activeCacti.push(
+      new Cactus(
+        p.x,
+        p.y,
+        type
+      )
+    );
+
+    cactiSpawned++;
+
+    cactusTimer=
+      Math.max(
+        .18,
+        .7-SaveData.wave*.015
+      );
+  }else{
+    cactusTimer-=dt;
+  }
+
+  if(
+    zombiesSpawned<levelZombieTarget &&
+    zombieTimer<=0
+  ){
+
+    spawnZombie();
+
+    zombiesSpawned++;
+
+    zombieTimer=
+      Math.max(
+        .35,
+        1.7-SaveData.wave*.025
+      );
+  }else{
+    zombieTimer-=dt;
+  }
+
+  activeCacti=
+    activeCacti.filter(
+      c=>c.state!=='DESTROYED'
+    );
+
+  zombies=
+    zombies.filter(
+      z=>!z.dead
+    );
+
+  const allCactiDone=
     cactiSpawned>=levelCactiTarget &&
+    activeCacti.length===0;
+
+  const allZombiesDone=
     zombiesSpawned>=levelZombieTarget &&
+    zombies.length===0;
+
+  if(
     !levelCleared &&
-    activeCacti.every(
-      c=>c.state==='DESTROYED'
-    ) &&
-    zombies.every(
-      z=>z.dead
-    )
+    allCactiDone &&
+    allZombiesDone
   ){
 
     levelCleared=true;
@@ -1972,7 +1774,7 @@ function updateWave(dt){
       'LEVEL CLEARED!',
       '#2ed573',
       25
-    )
+    );
   }
 }
 
@@ -1984,15 +1786,14 @@ class Zombie{
     this.y=y;
 
     this.maxHp=
-      45+
-      SaveData.wave*12;
+      45+SaveData.wave*12;
 
     this.hp=this.maxHp;
 
     this.dead=false;
 
     this.speed=
-      1.0+
+      1+
       Math.min(
         .8,
         SaveData.wave*.025
@@ -2001,16 +1802,14 @@ class Zombie{
     this.attackCd=0;
     this.target=null;
     this.hitFlash=0;
-    this.radius=17
+    this.radius=17;
   }
 
   takeDamage(d){
 
-    if(this.dead)
-      return;
+    if(this.dead)return;
 
     this.hp-=d;
-
     this.hitFlash=.12;
 
     addFloatText(
@@ -2029,8 +1828,9 @@ class Zombie{
       3
     );
 
-    if(this.hp<=0)
-      this.die()
+    if(this.hp<=0){
+      this.die();
+    }
   }
 
   die(){
@@ -2053,13 +1853,12 @@ class Zombie{
       'ZOMBIE DOWN',
       '#2ed573',
       13
-    )
+    );
   }
 
   update(dt){
 
-    if(this.dead)
-      return;
+    if(this.dead)return;
 
     this.hitFlash=
       Math.max(
@@ -2078,31 +1877,29 @@ class Zombie{
 
     for(const d of defenses){
 
-      if(d.dead)
-        continue;
+      if(d.dead)continue;
 
-      const dist=
-        Math.hypot(
-          this.x-d.x,
-          this.y-d.y
-        );
+      const dist=Math.hypot(
+        this.x-d.x,
+        this.y-d.y
+      );
 
       if(dist<bestD){
         bestD=dist;
-        best=d
+        best=d;
       }
     }
 
-    const playerD=
-      Math.hypot(
-        this.x-Player.x,
-        this.y-Player.y
-      );
+    const playerD=Math.hypot(
+      this.x-Player.x,
+      this.y-Player.y
+    );
 
-    if(best&&bestD<250)
+    if(best&&bestD<250){
       this.target=best;
-    else
+    }else{
       this.target=Player;
+    }
 
     if(this.target){
 
@@ -2112,42 +1909,41 @@ class Zombie{
       const dx=tx-this.x;
       const dy=ty-this.y;
 
-      const dist=
-        Math.hypot(dx,dy)||1;
+      const dist=Math.hypot(dx,dy)||1;
 
       const stop=
         this.target===Player
-        ?25
-        :(this.target.type==='wall'
-          ?36
-          :32);
+          ?25
+          :(this.target.type==='wall'
+            ?36
+            :32);
 
       if(dist>stop){
 
         this.x+=
-          dx/dist*
-          this.speed;
+          dx/dist*this.speed;
 
         this.y+=
-          dy/dist*
-          this.speed
+          dy/dist*this.speed;
 
       }else if(this.attackCd<=0){
 
         this.attackCd=
           Math.max(
             .35,
-            1.05-
-            SaveData.wave*.025
+            1.05-SaveData.wave*.025
           );
 
-        if(this.target===Player)
+        if(this.target===Player){
+
           Player.takeDamage(1);
-        else
+
+        }else{
+
           this.target.takeDamage(
-            18+
-            SaveData.wave*2
-          )
+            18+SaveData.wave*2
+          );
+        }
       }
     }
 
@@ -2165,13 +1961,12 @@ class Zombie{
         screenH-24,
         this.y
       )
-    )
+    );
   }
 
   draw(){
 
-    if(this.dead)
-      return;
+    if(this.dead)return;
 
     ctx.fillStyle='rgba(0,0,0,.45)';
 
@@ -2198,8 +1993,8 @@ class Zombie{
 
     ctx.fillStyle=
       this.hitFlash>0
-      ?'#fff'
-      :'#6abf69';
+        ?'#fff'
+        :'#6abf69';
 
     ctx.fillRect(
       -14,
@@ -2219,61 +2014,24 @@ class Zombie{
 
     ctx.fillStyle='#c8ffd0';
 
-    ctx.fillRect(
-      -10,
-      -10,
-      7,
-      7
-    );
-
-    ctx.fillRect(
-      3,
-      -10,
-      7,
-      7
-    );
+    ctx.fillRect(-10,-10,7,7);
+    ctx.fillRect(3,-10,7,7);
 
     ctx.fillStyle='#152018';
 
-    ctx.fillRect(
-      -8,
-      -8,
-      3,
-      4
-    );
-
-    ctx.fillRect(
-      5,
-      -8,
-      3,
-      4
-    );
+    ctx.fillRect(-8,-8,3,4);
+    ctx.fillRect(5,-8,3,4);
 
     ctx.fillStyle='#4b7845';
 
-    ctx.fillRect(
-      -20,
-      -7,
-      6,
-      8
-    );
-
-    ctx.fillRect(
-      14,
-      -4,
-      7,
-      7
-    );
+    ctx.fillRect(-20,-7,6,8);
+    ctx.fillRect(14,-4,7,7);
 
     ctx.restore();
 
     const w=38;
-
-    const bx=
-      this.x-w/2;
-
-    const by=
-      this.y-29;
+    const bx=this.x-w/2;
+    const by=this.y-29;
 
     ctx.fillStyle='#111';
 
@@ -2294,45 +2052,46 @@ class Zombie{
         this.hp/this.maxHp
       ),
       4
-    )
+    );
   }
 }
 
 function spawnZombie(){
 
   const side=
-    Math.floor(
-      Math.random()*4
-    );
+    Math.floor(Math.random()*4);
 
   let x,y;
 
   if(side===0){
+
     x=Math.random()*screenW;
-    y=65
+    y=65;
+
   }else if(side===1){
+
     x=screenW-20;
-    y=70+
-      Math.random()*
-      (screenH-90)
+    y=70+Math.random()*(screenH-90);
+
   }else if(side===2){
+
     x=Math.random()*screenW;
-    y=screenH-20
+    y=screenH-20;
+
   }else{
+
     x=20;
-    y=70+
-      Math.random()*
-      (screenH-90)
+    y=70+Math.random()*(screenH-90);
   }
 
   zombies.push(
     new Zombie(x,y)
   );
 
-  AudioEngine.zombie()
+  AudioEngine.zombie();
 }
 
-// DEFENSE BUILDING
+/* DEFENSE BUILDING */
 
 let defenses=[];
 
@@ -2344,13 +2103,16 @@ const buildMode={
   y:0
 };
 
+let selectedDefense=null;
+let dragDefense=null;
+let dragOffsetX=0;
+let dragOffsetY=0;
+
 function beginBuild(type){
 
-  if(!levelCleared)
-    return;
+  if(!levelCleared)return;
 
-  const p=
-    PROTECTION_DB[type];
+  const p=PROTECTION_DB[type];
 
   if(SaveData.money<p.cost){
 
@@ -2362,7 +2124,7 @@ function beginBuild(type){
       15
     );
 
-    return
+    return;
   }
 
   closeAllModals();
@@ -2370,6 +2132,7 @@ function beginBuild(type){
   buildMode.active=true;
   buildMode.type=type;
   buildMode.rotation=0;
+
   buildMode.x=Player.x;
   buildMode.y=Player.y;
 
@@ -2381,13 +2144,12 @@ function beginBuild(type){
       :'PLACE TURRET',
     '#00d2d3',
     15
-  )
+  );
 }
 
 function cancelBuild(){
-
   buildMode.active=false;
-  buildMode.type=null
+  buildMode.type=null;
 }
 
 function rotateBuild(key){
@@ -2395,8 +2157,7 @@ function rotateBuild(key){
   if(
     !buildMode.active ||
     buildMode.type!=='wall'
-  )
-    return;
+  )return;
 
   buildMode.rotation=
     (
@@ -2404,33 +2165,132 @@ function rotateBuild(key){
       (
         key==='ArrowLeft'||
         key==='ArrowUp'
-        ?90
-        :270
+          ?90
+          :270
       )
-    )%360
+    )%360;
 }
 
-function validPlacement(
-  x,
-  y,
-  type
-){
+function canvasPoint(e){
+
+  const r=canvas.getBoundingClientRect();
+
+  return{
+    x:(e.clientX-r.left)*
+      (canvas.width/r.width),
+
+    y:(e.clientY-r.top)*
+      (canvas.height/r.height)
+  };
+}
+
+function defenseAt(x,y){
+
+  for(
+    let i=defenses.length-1;
+    i>=0;
+    i--
+  ){
+
+    const d=defenses[i];
+
+    if(d.dead)continue;
+
+    const hit=
+      d.type==='wall'
+        ?Math.hypot(
+          x-d.x,
+          y-d.y
+        )<48
+        :Math.hypot(
+          x-d.x,
+          y-d.y
+        )<30;
+
+    if(hit)return d;
+  }
+
+  return null;
+}
+
+/* Walls/turrets can now be dragged around. */
+function canMoveDefense(d,x,y){
 
   if(
     x<45 ||
     x>screenW-45 ||
     y<70 ||
     y>screenH-35
-  )
+  )return false;
+
+  if(
+    Math.hypot(
+      Player.x-x,
+      Player.y-y
+    )<30
+  )return false;
+
+  for(const other of defenses){
+
+    if(
+      other!==d &&
+      !other.dead &&
+      Math.hypot(
+        other.x-x,
+        other.y-y
+      )<42
+    ){
+      return false;
+    }
+  }
+
+  for(const c of activeCacti){
+
+    if(
+      c.state!=='DESTROYED' &&
+      Math.hypot(
+        c.x-x,
+        c.y-y
+      )<38
+    ){
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function moveDefenseTo(d,x,y){
+
+  if(!d)return false;
+
+  if(!canMoveDefense(d,x,y)){
     return false;
+  }
+
+  d.x=x;
+  d.y=y;
+
+  saveGame();
+
+  return true;
+}
+
+function validPlacement(x,y,type){
+
+  if(
+    x<45 ||
+    x>screenW-45 ||
+    y<70 ||
+    y>screenH-35
+  )return false;
 
   if(
     Math.hypot(
       Player.x-x,
       Player.y-y
     )<40
-  )
-    return false;
+  )return false;
 
   for(const d of defenses){
 
@@ -2440,8 +2300,9 @@ function validPlacement(
         d.x-x,
         d.y-y
       )<45
-    )
-      return false
+    ){
+      return false;
+    }
   }
 
   for(const c of activeCacti){
@@ -2452,11 +2313,12 @@ function validPlacement(
         c.x-x,
         c.y-y
       )<45
-    )
-      return false
+    ){
+      return false;
+    }
   }
 
-  return true
+  return true;
 }
 
 function placeDefense(
@@ -2464,29 +2326,29 @@ function placeDefense(
   y=buildMode.y
 ){
 
-  if(!buildMode.active)
-    return;
+  if(!buildMode.active)return;
 
-  const p=
-    PROTECTION_DB[
-      buildMode.type
-    ];
+  const p=PROTECTION_DB[
+    buildMode.type
+  ];
 
   if(SaveData.money<p.cost){
     cancelBuild();
-    return
+    return;
   }
 
   if(x==null){
     x=Player.x;
-    y=Player.y
+    y=Player.y;
   }
 
-  if(!validPlacement(
-    x,
-    y,
-    buildMode.type
-  )){
+  if(
+    !validPlacement(
+      x,
+      y,
+      buildMode.type
+    )
+  ){
 
     addFloatText(
       x,
@@ -2496,12 +2358,12 @@ function placeDefense(
       13
     );
 
-    return
+    return;
   }
 
   SaveData.money-=p.cost;
 
-  defenses.push({
+  const d={
     type:buildMode.type,
     x,
     y,
@@ -2510,7 +2372,11 @@ function placeDefense(
     maxHp:p.hp,
     dead:false,
     fireCd:0
-  });
+  };
+
+  defenses.push(d);
+
+  selectedDefense=d;
 
   saveGame();
 
@@ -2533,7 +2399,7 @@ function placeDefense(
     15
   );
 
-  cancelBuild()
+  cancelBuild();
 }
 
 function updateDefenses(dt){
@@ -2548,7 +2414,7 @@ function updateDefenses(dt){
 
     if(d.dead){
       defenses.splice(i,1);
-      continue
+      continue;
     }
 
     if(d.type==='turret'){
@@ -2566,29 +2432,26 @@ function updateDefenses(dt){
 
         for(const z of zombies){
 
-          if(z.dead)
-            continue;
+          if(z.dead)continue;
 
-          const dist=
-            Math.hypot(
-              z.x-d.x,
-              z.y-d.y
-            );
+          const dist=Math.hypot(
+            z.x-d.x,
+            z.y-d.y
+          );
 
           if(
             dist<145 &&
             dist<best
           ){
             best=dist;
-            target=z
+            target=z;
           }
         }
 
         if(target){
 
           target.takeDamage(
-            18+
-            SaveData.wave*2
+            18+SaveData.wave*2
           );
 
           d.fireCd=.55;
@@ -2600,7 +2463,7 @@ function updateDefenses(dt){
             target.y,
             15,
             '#00d2d3'
-          )
+          );
         }
       }
     }
@@ -2621,22 +2484,17 @@ function updateDefenses(dt){
       addFloatText(
         d.x,
         d.y-25,
-        `${
-          d.type==='wall'
-          ?'WALL'
-          :'TURRET'
-        } DESTROYED`,
+        `${d.type==='wall'?'WALL':'TURRET'} DESTROYED`,
         '#ff4757',
         13
-      )
+      );
     }
   }
 }
 
 function drawDefense(d){
 
-  if(d.dead)
-    return;
+  if(d.dead)return;
 
   ctx.save();
 
@@ -2652,7 +2510,6 @@ function drawDefense(d){
     );
 
     ctx.fillStyle='#202b38';
-
     ctx.fillRect(
       -38,
       -10,
@@ -2661,7 +2518,6 @@ function drawDefense(d){
     );
 
     ctx.fillStyle='#718093';
-
     ctx.fillRect(
       -38,
       -10,
@@ -2690,24 +2546,26 @@ function drawDefense(d){
       -5,
       8,
       5
-    )
+    );
 
   }else{
 
-    ctx.fillStyle=
-      'rgba(0,210,211,.10)';
+    if(d===selectedDefense){
 
-    ctx.beginPath();
+      ctx.fillStyle='rgba(0,210,211,.10)';
 
-    ctx.arc(
-      0,
-      0,
-      145,
-      0,
-      Math.PI*2
-    );
+      ctx.beginPath();
 
-    ctx.fill();
+      ctx.arc(
+        0,
+        0,
+        145,
+        0,
+        Math.PI*2
+      );
+
+      ctx.fill();
+    }
 
     ctx.fillStyle='#2f3b45';
 
@@ -2748,18 +2606,30 @@ function drawDefense(d){
       -4,
       13,
       8
-    )
+    );
   }
 
   ctx.restore();
 
+  if(d===selectedDefense){
+
+    ctx.strokeStyle='#fff';
+    ctx.lineWidth=2;
+    ctx.setLineDash([5,4]);
+
+    ctx.strokeRect(
+      d.x-48,
+      d.y-48,
+      96,
+      96
+    );
+
+    ctx.setLineDash([]);
+  }
+
   const w=72;
-
-  const bx=
-    d.x-w/2;
-
-  const by=
-    d.y-48;
+  const bx=d.x-w/2;
+  const by=d.y-48;
 
   ctx.fillStyle='#10151b';
 
@@ -2772,8 +2642,8 @@ function drawDefense(d){
 
   ctx.fillStyle=
     d.type==='wall'
-    ?'#ffd32a'
-    :'#00d2d3';
+      ?'#ffd32a'
+      :'#00d2d3';
 
   ctx.fillRect(
     bx,
@@ -2783,27 +2653,15 @@ function drawDefense(d){
       d.hp/d.maxHp
     ),
     4
-  )
+  );
 }
 
 const Stands={
-
   active:false,
 
-  sell:{
-    x:0,
-    y:0
-  },
-
-  shop:{
-    x:0,
-    y:0
-  },
-
-  protect:{
-    x:0,
-    y:0
-  },
+  sell:{x:0,y:0},
+  shop:{x:0,y:0},
+  protect:{x:0,y:0},
 
   next:{
     x:0,
@@ -2815,8 +2673,7 @@ const Stands={
 
     this.active=true;
 
-    const cy=
-      screenH/2;
+    const cy=screenH/2;
 
     this.sell.x=
       screenW/2-220;
@@ -2857,13 +2714,12 @@ const Stands={
       cy,
       12,
       '#00d2d3'
-    )
+    );
   },
 
   draw(){
 
-    if(!this.active)
-      return;
+    if(!this.active)return;
 
     drawStand(
       this.sell.x,
@@ -2919,6 +2775,7 @@ const Stands={
 
     ctx.fillStyle='#fff';
     ctx.textAlign='center';
+
     ctx.font='bold 12px Courier New';
 
     ctx.fillText(
@@ -2960,7 +2817,7 @@ const Stands={
           'CLICK / [E] '+t,
           s.x,
           s.y-52
-        )
+        );
       }
     }
 
@@ -2979,7 +2836,7 @@ const Stands={
         'START LEVEL '+(SaveData.wave+1),
         this.next.x,
         this.next.y-52
-      )
+      );
     }
   }
 };
@@ -2998,7 +2855,6 @@ function drawStand(
   ctx.translate(x,y);
 
   ctx.fillStyle=c2;
-
   ctx.fillRect(
     -36,
     0,
@@ -3071,7 +2927,7 @@ function drawStand(
     24
   );
 
-  ctx.restore()
+  ctx.restore();
 }
 
 function checkStandsInteraction(
@@ -3079,18 +2935,17 @@ function checkStandsInteraction(
   cy=null
 ){
 
-  if(!Stands.active)
-    return false;
+  if(!Stands.active)return false;
 
   const x=
     cx===null
-    ?Player.x
-    :cx;
+      ?Player.x
+      :cx;
 
   const y=
     cy===null
-    ?Player.y
-    :cy;
+      ?Player.y
+      :cy;
 
   const tests=[
     [
@@ -3098,19 +2953,16 @@ function checkStandsInteraction(
       ()=>openSellModal(),
       65
     ],
-
     [
       Stands.shop,
       ()=>openShopModal(),
       65
     ],
-
     [
       Stands.protect,
       ()=>openProtectionModal(),
       70
     ],
-
     [
       Stands.next,
       ()=>{
@@ -3118,15 +2970,13 @@ function checkStandsInteraction(
         saveGame();
         initWave(
           SaveData.wave
-        )
+        );
       },
       55
     ]
   ];
 
-  for(
-    const [s,fn,r] of tests
-  ){
+  for(const [s,fn,r] of tests){
 
     if(
       Math.hypot(
@@ -3139,11 +2989,11 @@ function checkStandsInteraction(
 
       fn();
 
-      return true
+      return true;
     }
   }
 
-  return false
+  return false;
 }
 
 const modalContainer=
@@ -3168,45 +3018,24 @@ const protectionModal=
 
 function closeAllModals(){
 
-  modalContainer.classList.add(
-    'hidden'
-  );
+  modalContainer.classList.add('hidden');
 
-  sellModal.classList.add(
-    'hidden'
-  );
-
-  shopModal.classList.add(
-    'hidden'
-  );
-
-  protectionModal.classList.add(
-    'hidden'
-  )
+  sellModal.classList.add('hidden');
+  shopModal.classList.add('hidden');
+  protectionModal.classList.add('hidden');
 }
 
 function openSellModal(){
 
-  if(!Stands.active)
-    return;
+  if(!Stands.active)return;
 
-  modalContainer.classList.remove(
-    'hidden'
-  );
+  modalContainer.classList.remove('hidden');
 
-  sellModal.classList.remove(
-    'hidden'
-  );
+  sellModal.classList.remove('hidden');
+  shopModal.classList.add('hidden');
+  protectionModal.classList.add('hidden');
 
-  shopModal.classList.add(
-    'hidden'
-  );
-
-  protectionModal.classList.add(
-    'hidden'
-  );
-
-  updateSell()
+  updateSell();
 }
 
 function updateSell(){
@@ -3219,9 +3048,7 @@ function updateSell(){
   document.getElementById(
     'sell-rate-text'
   ).textContent=
-    `Market Rate: $${10+
-      SaveData.upgrades.partValue*4
-    } Gold / Part`
+    `Market Rate: $${10+SaveData.upgrades.partValue*4} Gold / Part`;
 }
 
 document.getElementById(
@@ -3233,14 +3060,13 @@ document.getElementById(
     SaveData.cactusParts--;
 
     SaveData.money+=
-      10+
-      SaveData.upgrades.partValue*4;
+      10+SaveData.upgrades.partValue*4;
 
     saveGame();
 
     AudioEngine.pickup();
 
-    updateSell()
+    updateSell();
   }
 };
 
@@ -3252,10 +3078,7 @@ document.getElementById(
 
     SaveData.money+=
       SaveData.cactusParts*
-      (
-        10+
-        SaveData.upgrades.partValue*4
-      );
+      (10+SaveData.upgrades.partValue*4);
 
     SaveData.cactusParts=0;
 
@@ -3263,34 +3086,24 @@ document.getElementById(
 
     AudioEngine.coin();
 
-    updateSell()
+    updateSell();
   }
 };
 
 document.getElementById(
   'btn-close-sell'
-).onclick=
-  closeAllModals;
+).onclick=closeAllModals;
 
 function openShopModal(){
 
-  modalContainer.classList.remove(
-    'hidden'
-  );
+  modalContainer.classList.remove('hidden');
 
-  sellModal.classList.add(
-    'hidden'
-  );
+  sellModal.classList.add('hidden');
+  protectionModal.classList.add('hidden');
 
-  protectionModal.classList.add(
-    'hidden'
-  );
+  shopModal.classList.remove('hidden');
 
-  shopModal.classList.remove(
-    'hidden'
-  );
-
-  renderUpgrades()
+  renderUpgrades();
 }
 
 function renderUpgrades(){
@@ -3307,112 +3120,79 @@ function renderUpgrades(){
 
   list.innerHTML='';
 
-  for(
-    const k of Object.keys(
-      UPGRADES_DB
-    )
-  ){
+  for(const k of Object.keys(UPGRADES_DB)){
 
     const i=UPGRADES_DB[k];
 
     const l=
       SaveData.upgrades[k]||0;
 
-    const c=
-      upgradeCost(k);
+    const c=upgradeCost(k);
 
     const row=
-      document.createElement(
-        'div'
-      );
+      document.createElement('div');
 
     row.className='upgrade-row';
 
     row.innerHTML=
       `<div class="upg-info">
-        <div class="upg-title">
-          ${i.name} (Lv. ${l}/${i.max})
-        </div>
-        <div class="upg-desc">
-          ${i.desc}
-        </div>
+        <div class="upg-title">${i.name} (Lv. ${l}/${i.max})</div>
+        <div class="upg-desc">${i.desc}</div>
       </div>`;
 
     const b=
-      document.createElement(
-        'button'
-      );
+      document.createElement('button');
 
-    b.className=
-      'pixel-btn btn-buy';
+    b.className='pixel-btn btn-buy';
 
     if(l>=i.max){
 
       b.textContent='MAX';
-
-      b.classList.add(
-        'btn-max'
-      )
+      b.classList.add('btn-max');
 
     }else{
 
-      b.textContent=
-        `$${c} BUY`;
+      b.textContent=`$${c} BUY`;
 
       if(SaveData.money<c){
 
-        b.classList.add(
-          'btn-max'
-        )
+        b.classList.add('btn-max');
 
       }else{
 
         b.onclick=()=>{
 
           SaveData.money-=c;
-
-          SaveData.upgrades[k]=
-            l+1;
+          SaveData.upgrades[k]=l+1;
 
           saveGame();
 
           AudioEngine.coin();
 
-          renderUpgrades()
-        }
+          renderUpgrades();
+        };
       }
     }
 
     row.appendChild(b);
-
-    list.appendChild(row)
+    list.appendChild(row);
   }
 }
 
 document.getElementById(
   'btn-close-shop'
-).onclick=
-  closeAllModals;
+).onclick=closeAllModals;
 
 function openProtectionModal(){
 
-  modalContainer.classList.remove(
-    'hidden'
-  );
+  modalContainer.classList.remove('hidden');
 
-  sellModal.classList.add(
-    'hidden'
-  );
+  sellModal.classList.add('hidden');
+  shopModal.classList.add('hidden');
 
-  shopModal.classList.add(
-    'hidden'
-  );
+  protectionModal.classList.remove('hidden');
 
-  protectionModal.classList.remove(
-    'hidden'
-  );
-
-  renderProtection()
+  renderProtection();
 }
 
 function renderProtection(){
@@ -3429,99 +3209,70 @@ function renderProtection(){
 
   list.innerHTML='';
 
-  for(
-    const k of Object.keys(
-      PROTECTION_DB
-    )
-  ){
+  for(const k of Object.keys(PROTECTION_DB)){
 
-    const i=
-      PROTECTION_DB[k];
+    const i=PROTECTION_DB[k];
 
     const row=
-      document.createElement(
-        'div'
-      );
+      document.createElement('div');
 
-    row.className=
-      'upgrade-row';
+    row.className='upgrade-row';
 
     row.innerHTML=
       `<div class="upg-info">
-        <div class="upg-title">
-          ${i.name}
-        </div>
-        <div class="upg-desc">
-          ${i.desc} HP: ${i.hp}
-        </div>
+        <div class="upg-title">${i.name}</div>
+        <div class="upg-desc">${i.desc} HP: ${i.hp}</div>
       </div>`;
 
     const b=
-      document.createElement(
-        'button'
-      );
+      document.createElement('button');
 
-    b.className=
-      'pixel-btn btn-buy';
-
-    b.textContent=
-      `$${i.cost} BUILD`;
+    b.className='pixel-btn btn-buy';
+    b.textContent=`$${i.cost} BUILD`;
 
     if(SaveData.money<i.cost){
 
-      b.classList.add(
-        'btn-max'
-      )
+      b.classList.add('btn-max');
 
     }else{
 
-      b.onclick=()=>
-        beginBuild(k)
+      b.onclick=()=>{
+        beginBuild(k);
+      };
     }
 
     row.appendChild(b);
-
-    list.appendChild(row)
+    list.appendChild(row);
   }
 }
 
 document.getElementById(
   'btn-close-protection'
-).onclick=
-  closeAllModals;
+).onclick=closeAllModals;
 
 function startNewGame(){
 
   closeAllModals();
 
+  freshRun();
+
   Player.reset();
 
-  initWave(
-    SaveData.wave
-  );
+  initWave(1);
 
-  gameState=
-    STATES.PLAYING
+  gameState=STATES.PLAYING;
 }
 
 function update(dt){
 
-  if(shakeTime>0)
+  if(shakeTime>0){
     shakeTime-=dt;
+  }
 
   if(gameState===STATES.PLAYING){
 
     if(!buildMode.active){
-
-      Player.update(dt)
-
-    }else{
-
-      buildMode.x=
-        Player.x;
-
-      buildMode.y=
-        Player.y
+      Player.update(dt);
     }
 
     updateWave(dt);
@@ -3538,10 +3289,10 @@ function update(dt){
 
     collectParts(dt);
 
-    updateSpikes(dt)
+    updateSpikes(dt);
   }
 
-  updateEffects(dt)
+  updateEffects(dt);
 }
 
 function collectParts(dt){
@@ -3549,8 +3300,7 @@ function collectParts(dt){
   const ml=
     SaveData.upgrades.magnetPickup;
 
-  const mr=
-    70+ml*60;
+  const mr=70+ml*60;
 
   for(
     let i=droppedParts.length-1;
@@ -3558,17 +3308,14 @@ function collectParts(dt){
     i--
   ){
 
-    const d=
-      droppedParts[i];
+    const d=droppedParts[i];
 
-    if(d.progress<1)
+    if(d.progress<1){
       d.progress+=dt*3.5;
+    }
 
-    d.x+=
-      (d.targetX-d.x)*.15;
-
-    d.y+=
-      (d.targetY-d.y)*.15;
+    d.x+=(d.targetX-d.x)*.15;
+    d.y+=(d.targetY-d.y)*.15;
 
     if(
       ml &&
@@ -3578,13 +3325,8 @@ function collectParts(dt){
       )<mr
     ){
 
-      d.x+=
-        (Player.x-d.x)*
-        .08*ml;
-
-      d.y+=
-        (Player.y-d.y)*
-        .08*ml
+      d.x+=(Player.x-d.x)*.08*ml;
+      d.y+=(Player.y-d.y)*.08*ml;
     }
 
     if(
@@ -3608,10 +3350,7 @@ function collectParts(dt){
         14
       );
 
-      droppedParts.splice(
-        i,
-        1
-      )
+      droppedParts.splice(i,1);
     }
   }
 }
@@ -3638,12 +3377,9 @@ function updateSpikes(dt){
 
       Player.takeDamage(1);
 
-      spikes.splice(
-        i,
-        1
-      );
+      spikes.splice(i,1);
 
-      continue
+      continue;
     }
 
     if(
@@ -3652,11 +3388,7 @@ function updateSpikes(dt){
       s.y<50 ||
       s.y>screenH+30
     ){
-
-      spikes.splice(
-        i,
-        1
-      )
+      spikes.splice(i,1);
     }
   }
 }
@@ -3669,20 +3401,14 @@ function updateEffects(dt){
     i--
   ){
 
-    const s=
-      shockwaves[i];
+    const s=shockwaves[i];
 
-    s.r+=
-      (s.maxR-s.r)*.25;
+    s.r+=(s.maxR-s.r)*.25;
+    s.life-=dt*3.5;
 
-    s.life-=
-      dt*3.5;
-
-    if(s.life<=0)
-      shockwaves.splice(
-        i,
-        1
-      )
+    if(s.life<=0){
+      shockwaves.splice(i,1);
+    }
   }
 
   for(
@@ -3691,19 +3417,16 @@ function updateEffects(dt){
     i--
   ){
 
-    const p=
-      particles[i];
+    const p=particles[i];
 
     p.x+=p.vx;
     p.y+=p.vy;
 
     p.life-=p.decay;
 
-    if(p.life<=0)
-      particles.splice(
-        i,
-        1
-      )
+    if(p.life<=0){
+      particles.splice(i,1);
+    }
   }
 
   for(
@@ -3712,19 +3435,14 @@ function updateEffects(dt){
     i--
   ){
 
-    const f=
-      floatingTexts[i];
+    const f=floatingTexts[i];
 
     f.y+=f.vy;
+    f.life-=dt*1.3;
 
-    f.life-=
-      dt*1.3;
-
-    if(f.life<=0)
-      floatingTexts.splice(
-        i,
-        1
-      )
+    if(f.life<=0){
+      floatingTexts.splice(i,1);
+    }
   }
 }
 
@@ -3735,12 +3453,9 @@ function render(){
   if(shakeTime>0){
 
     ctx.translate(
-      (Math.random()-.5)*
-      shakeMag*2,
-
-      (Math.random()-.5)*
-      shakeMag*2
-    )
+      (Math.random()-.5)*shakeMag*2,
+      (Math.random()-.5)*shakeMag*2
+    );
   }
 
   ctx.fillStyle='#100c1e';
@@ -3754,20 +3469,20 @@ function render(){
 
   if(gameState===STATES.MENU){
 
-    drawMenu()
+    drawMenu();
 
   }else if(gameState===STATES.PLAYING){
 
     drawArena();
     drawGame();
-    drawHUD()
+    drawHUD();
 
   }else{
 
-    drawGameOver()
+    drawGameOver();
   }
 
-  ctx.restore()
+  ctx.restore();
 }
 
 function drawArena(){
@@ -3788,17 +3503,17 @@ function drawArena(){
 
       ctx.fillStyle=
         (
-          (x/ts+y/ts)%2===0
-        )
-        ?'#171126'
-        :'#1e1631';
+          x/ts+y/ts
+        )%2===0
+          ?'#171126'
+          :'#1e1631';
 
       ctx.fillRect(
         x,
         y,
         ts,
         ts
-      )
+      );
     }
   }
 
@@ -3810,7 +3525,7 @@ function drawArena(){
     6,
     screenW-12,
     screenH-12
-  )
+  );
 }
 
 function drawGame(){
@@ -3823,14 +3538,9 @@ function drawGame(){
 
   shockwaves.forEach(s=>{
 
-    ctx.strokeStyle=
-      s.color;
-
+    ctx.strokeStyle=s.color;
     ctx.globalAlpha=
-      Math.max(
-        0,
-        s.life
-      );
+      Math.max(0,s.life);
 
     ctx.lineWidth=3;
 
@@ -3846,7 +3556,7 @@ function drawGame(){
 
     ctx.stroke();
 
-    ctx.globalAlpha=1
+    ctx.globalAlpha=1;
   });
 
   droppedParts.forEach(d=>{
@@ -3872,16 +3582,19 @@ function drawGame(){
       d.y-2+b,
       4,
       4
-    )
+    );
   });
 
+  /*
+    Restored simple original-looking spike.
+  */
   spikes.forEach(s=>{
 
     ctx.save();
 
     ctx.translate(
-      s.x,
-      s.y
+      Math.round(s.x),
+      Math.round(s.y)
     );
 
     ctx.rotate(
@@ -3893,18 +3606,32 @@ function drawGame(){
 
     ctx.fillStyle='#ffd32a';
 
-    ctx.beginPath();
+    ctx.fillRect(
+      -7,
+      -2,
+      12,
+      4
+    );
 
-    ctx.moveTo(9,0);
-    ctx.lineTo(-7,-4);
-    ctx.lineTo(-3,0);
-    ctx.lineTo(-7,4);
+    ctx.fillStyle='#fff2a6';
 
-    ctx.closePath();
+    ctx.fillRect(
+      -3,
+      -4,
+      5,
+      2
+    );
 
-    ctx.fill();
+    ctx.fillStyle='#e1a800';
 
-    ctx.restore()
+    ctx.fillRect(
+      4,
+      -3,
+      5,
+      6
+    );
+
+    ctx.restore();
   });
 
   activeCacti.forEach(
@@ -3934,10 +3661,7 @@ function drawGame(){
     ctx.restore();
 
     ctx.fillStyle='#fff';
-
-    ctx.font=
-      'bold 12px Courier New';
-
+    ctx.font='bold 12px Courier New';
     ctx.textAlign='center';
 
     ctx.fillText(
@@ -3946,7 +3670,7 @@ function drawGame(){
         :'TURRET | CLICK/SPACE TO PLACE',
       screenW/2,
       screenH-22
-    )
+    );
   }
 
   Player.draw();
@@ -3960,16 +3684,13 @@ function drawGame(){
       p.y,
       p.size,
       p.size
-    )
+    );
   });
 
   floatingTexts.forEach(f=>{
 
     ctx.globalAlpha=
-      Math.max(
-        0,
-        f.life
-      );
+      Math.max(0,f.life);
 
     ctx.fillStyle=f.color;
 
@@ -3984,14 +3705,13 @@ function drawGame(){
       f.y
     );
 
-    ctx.globalAlpha=1
-  })
+    ctx.globalAlpha=1;
+  });
 }
 
 function drawHUD(){
 
-  ctx.fillStyle=
-    'rgba(10,8,20,.92)';
+  ctx.fillStyle='rgba(10,8,20,.92)';
 
   ctx.fillRect(
     0,
@@ -4014,12 +3734,11 @@ function drawHUD(){
     i<Player.maxHealth;
     i++
   ){
-
     PixelIcons.heart(
       20+i*20,
       18,
       i<Player.health
-    )
+    );
   }
 
   PixelIcons.coin(
@@ -4027,9 +3746,7 @@ function drawHUD(){
     20
   );
 
-  ctx.font=
-    'bold 14px Courier New';
-
+  ctx.font='bold 14px Courier New';
   ctx.textAlign='left';
 
   ctx.fillStyle='#ffd32a';
@@ -4061,33 +3778,10 @@ function drawHUD(){
     32
   );
 
-  const cLeft=
-    Math.max(
-      0,
-      levelCactiTarget-
-      cactiSpawned+
-      activeCacti.filter(
-        c=>c.state!=='DESTROYED'
-      ).length
-    );
-
-  const zLeft=
-    Math.max(
-      0,
-      levelZombieTarget-
-      zombiesSpawned+
-      zombies.filter(
-        z=>!z.dead
-      ).length
-    );
-
   ctx.fillStyle='#ff4757';
 
   ctx.fillText(
-    `CACTI ${Math.max(
-      0,
-      cactiSpawned
-    )}/${levelCactiTarget}`,
+    `CACTI ${Math.max(0,cactiSpawned)}/${levelCactiTarget}`,
     490,
     32
   );
@@ -4108,7 +3802,7 @@ function drawHUD(){
       'LEVEL CLEARED',
       755,
       32
-    )
+    );
   }
 
   const cd=
@@ -4120,11 +3814,10 @@ function drawHUD(){
 
   const mw=84;
 
-  const mx=
-    Math.min(
-      screenW-mw-15,
-      screenW-105
-    );
+  const mx=Math.min(
+    screenW-mw-15,
+    screenW-105
+  );
 
   ctx.fillStyle='#1e272e';
 
@@ -4157,15 +3850,13 @@ function drawHUD(){
   );
 
   ctx.fillStyle='#fff';
-
-  ctx.font=
-    'bold 10px Courier New';
+  ctx.font='bold 10px Courier New';
 
   ctx.fillText(
     'DASH [I]',
     mx+12,
     30
-  )
+  );
 }
 
 function drawMenu(){
@@ -4179,32 +3870,25 @@ function drawMenu(){
     screenH
   );
 
-  const t=
-    Date.now()*.001;
+  const t=Date.now()*.001;
 
   ctx.fillStyle='#fff';
 
-  for(
-    let i=0;
-    i<50;
-    i++
-  ){
+  for(let i=0;i<50;i++){
 
     ctx.fillRect(
       (i*123)%screenW,
       (i*77+t*14)%screenH,
       2,
       2
-    )
+    );
   }
 
   ctx.fillStyle='#2ed573';
   ctx.strokeStyle='#051b11';
   ctx.lineWidth=10;
 
-  ctx.font=
-    '900 48px Courier New';
-
+  ctx.font='900 48px Courier New';
   ctx.textAlign='center';
 
   ctx.strokeText(
@@ -4220,9 +3904,7 @@ function drawMenu(){
   );
 
   ctx.fillStyle='#ffd32a';
-
-  ctx.font=
-    'bold 15px Courier New';
+  ctx.font='bold 15px Courier New';
 
   ctx.fillText(
     'LEVEL-BASED CACTUS SURVIVAL & ZOMBIE DEFENSE',
@@ -4230,8 +3912,7 @@ function drawMenu(){
     screenH/2-45
   );
 
-  ctx.font=
-    'bold 16px Courier New';
+  ctx.font='bold 16px Courier New';
 
   ctx.fillText(
     `SAVED GOLD: $${SaveData.money}   |   SAVED PARTS: ${SaveData.cactusParts}`,
@@ -4241,12 +3922,8 @@ function drawMenu(){
 
   const bw=240;
   const bh=56;
-
-  const bx=
-    screenW/2-bw/2;
-
-  const by=
-    screenH/2+25;
+  const bx=screenW/2-bw/2;
+  const by=screenH/2+25;
 
   ctx.fillStyle='#1e824c';
 
@@ -4267,9 +3944,7 @@ function drawMenu(){
   );
 
   ctx.fillStyle='#0a2314';
-
-  ctx.font=
-    '900 24px Courier New';
+  ctx.font='900 24px Courier New';
 
   ctx.fillText(
     'START GAME',
@@ -4278,21 +3953,18 @@ function drawMenu(){
   );
 
   ctx.fillStyle='#a4b0be';
-
-  ctx.font=
-    '13px Courier New';
+  ctx.font='13px Courier New';
 
   ctx.fillText(
     'WASD: Move | SPACE/CLICK: Smash | I: Dash | Build: Arrows + Click',
     screenW/2,
     screenH/2+130
-  )
+  );
 }
 
 function drawGameOver(){
 
-  ctx.fillStyle=
-    'rgba(10,6,18,.94)';
+  ctx.fillStyle='rgba(10,6,18,.94)';
 
   ctx.fillRect(
     0,
@@ -4302,10 +3974,7 @@ function drawGameOver(){
   );
 
   ctx.fillStyle='#ff4757';
-
-  ctx.font=
-    '900 48px Courier New';
-
+  ctx.font='900 48px Courier New';
   ctx.textAlign='center';
 
   ctx.fillText(
@@ -4315,26 +3984,18 @@ function drawGameOver(){
   );
 
   ctx.fillStyle='#fff';
-
-  ctx.font=
-    'bold 17px Courier New';
+  ctx.font='bold 17px Courier New';
 
   ctx.fillText(
-    `LEVEL REACHED: ${SaveData.wave}`,
+    'YOUR RUN WAS RESET',
     screenW/2,
     screenH/2-25
   );
 
   ctx.fillText(
-    `PARTS IN BAG: ${SaveData.cactusParts}`,
+    'LEVEL 1 • $0 GOLD • NO UPGRADES • NO DEFENSES',
     screenW/2,
     screenH/2+5
-  );
-
-  ctx.fillText(
-    `TOTAL GOLD: $${SaveData.money}`,
-    screenW/2,
-    screenH/2+35
   );
 
   ctx.fillStyle='#3742fa';
@@ -4347,15 +4008,13 @@ function drawGameOver(){
   );
 
   ctx.fillStyle='#fff';
-
-  ctx.font=
-    'bold 16px Courier New';
+  ctx.font='bold 16px Courier New';
 
   ctx.fillText(
     'MAIN MENU [CLICK / KEY]',
     screenW/2,
     screenH/2+117
-  )
+  );
 }
 
 let last=performance.now();
@@ -4370,14 +4029,15 @@ function loop(now){
 
   last=now;
 
-  if(hitStopTime>0)
+  if(hitStopTime>0){
     hitStopTime-=dt;
-  else
+  }else{
     update(dt);
+  }
 
   render();
 
-  requestAnimationFrame(loop)
+  requestAnimationFrame(loop);
 }
 
 requestAnimationFrame(loop);
