@@ -7,8 +7,7 @@
   -webkit-touch-callout:none
 }
 
-html,
-body{
+html,body{
   width:100vw;
   height:100vh;
   overflow:hidden;
@@ -37,15 +36,8 @@ body{
   width:100vw;
   height:100vh;
   background:
-    linear-gradient(
-      rgba(18,16,16,0) 50%,
-      rgba(0,0,0,.22) 50%
-    ),
-    radial-gradient(
-      circle at center,
-      transparent 72%,
-      rgba(0,0,0,.65) 100%
-    );
+    linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,.22) 50%),
+    radial-gradient(circle at center,transparent 72%,rgba(0,0,0,.65) 100%);
   background-size:100% 4px,100% 100%;
   opacity:.8;
   z-index:5
@@ -257,9 +249,7 @@ body{
   z-index:15
 }
 
-@media (max-width:860px),
-(hover:none) and (pointer:coarse){
-
+@media (max-width:860px),(hover:none) and (pointer:coarse){
   #mobile-controls{
     display:flex
   }
